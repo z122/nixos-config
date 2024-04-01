@@ -1,146 +1,110 @@
 # Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
+# your system.  Help is available in the configuration.nix(5) man page
+# and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      (fetchTarball "https://github.com/nix-community/nixos-vscode-server/tarball/master")
     ];
 
-  nix.settings.substituters = [ "https://mirrors.ustc.edu.cn/nix-channels/store" ];
+  services.vscode-server.enable = true;
 
-  nixpkgs.config.allowUnfree = true;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  # Use the systemd-boot EFI boot loader.
-  boot.loader = 
-  {
-    grub = 
-    {
-      enable = true;
-      device = "nodev";
-      efiSupport = true;
-      extraEntries = ''
-          menuentry "Windows" {
-              search --file --no-floppy --set=root /EFI/Microsoft/Boot/bootmgfw.efi
-              chainloader (''${root})/EFI/Microsoft/Boot/bootmgfw.efi 
-          }
-            '';
+  nix = {
+    settings = {
+      auto-optimise-store = true;
+      experimental-features = [ "nix-command" "flakes" ];
+      substituters = [ "https://nix-gaming.cachix.org" ];
+      trusted-public-keys = [ "nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4=" ];
     };
-    efi = {
-      canTouchEfiVariables = true;
-      efiSysMountPoint = "/boot";
-        };
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 7d";
+    };
   };
 
-  networking.hostName = "NJnixos"; # Define your hostname.
-  # Pick only one of the below networking options.
+  # Bootloader.
+  boot.loader.grub.enable = true;
+  boot.loader.grub.device = "/dev/sda";
+  boot.loader.grub.useOSProber = true;
+
+  networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
-
-  # Set your time zone.
-  time.timeZone = "Asia/Shanghai";
-
-  i18n.inputMethod = {
-     enabled = "ibus";
-    ibus.engines = with pkgs.ibus-engines; [
-      libpinyin
-      rime
-    ];
-  };
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
+  # Enable networking
+  networking.networkmanager.enable = true;
+
+  # Set your time zone.
+  time.timeZone = "Asia/Shanghai";
+
   # Select internationalisation properties.
-  # i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  #   useXkbConfig = true; # use xkb.options in tty.
-  # };
+  i18n.defaultLocale = "zh_CN.UTF-8";
 
-  services.v2raya.enable = true;
-
-  services.xserver = {
-      enable = true;
-
-      videoDrivers = [ "nvidia" ];
-
-      # This helps fix tearing of windows for Nvidia cards
-      screenSection = ''
-        Option       "metamodes" "nvidia-auto-select +0+0 {ForceFullCompositionPipeline=On}"
-        Option       "AllowIndirectGLXProtocol" "off"
-        Option       "TripleBuffer" "on"
-      '';
-
-      # LightDM Display Manager
-      displayManager.defaultSession = "none+bspwm";
-      displayManager.lightdm = {
-        enable = true;
-        greeters.slick.enable = true;
-        # background = ../../modules/nixos/config/login-wallpaper.png;
-      };
-
-      # Tiling window manager
-      windowManager.bspwm = {
-        enable = true;
-      };
-
-      # Better support for general peripherals
-      libinput.enable = true;
-
-      # # Turn Caps Lock into Ctrl
-      # xkb = {
-      #   layout = "us";
-      #   options = "ctrl:nocaps";
-      # };
-    };
-
-  # # Enable the X11 windowing system.
-  # services.xserver.enable = true;
-  # # Enable the Plasma 5 Desktop Environment.
-  # services.xserver.displayManager.sddm.enable = true;
-  # services.xserver.desktopManager.plasma5.enable = true;
-  
+  i18n.extraLocaleSettings = {
+    LC_ADDRESS = "zh_CN.UTF-8";
+    LC_IDENTIFICATION = "zh_CN.UTF-8";
+    LC_MEASUREMENT = "zh_CN.UTF-8";
+    LC_MONETARY = "zh_CN.UTF-8";
+    LC_NAME = "zh_CN.UTF-8";
+    LC_NUMERIC = "zh_CN.UTF-8";
+    LC_PAPER = "zh_CN.UTF-8";
+    LC_TELEPHONE = "zh_CN.UTF-8";
+    LC_TIME = "zh_CN.UTF-8";
+  };
 
   # Configure keymap in X11
-  # services.xserver.xkb.layout = "us";
-  # services.xserver.xkb.options = "eurosign:e,caps:escape";
+  services.xserver = {
+    enable = true;
+    displayManager.sddm.enable = true;
+    desktopManager.plasma5.enable = true;
 
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
-  # Enable sound.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
+    layout = "cn";
+    xkbVariant = "";
+  };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.tggpx = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-    packages = with pkgs; [
+    description = "tggpx";
+    extraGroups = [ "networkmanager" "wheel" ];
+    packages = with pkgs; [];
+    openssh.authorizedKeys.keys = [
+      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDF/Wk4OTU52BI+LOQkr1RH7rqsSyNewS37FGYdte7UrhYPA8pNPRZgHLdB7BHDg/GvgYEVkEkN9JWqzIxDY1TjtZb2kefIdjcJ92pb+n62K4m/IxNJuU+kRV1CZ26xfS3TZAsBbXj3nWtNrIXcCqWS5TVEANMwrNRYEf0eUDpVxQPKrlL7MRXBR8i2Ds2I8SraC/9V/7kCPtUXzkqyVptPTX0i4DtHrfvw/IPrGeDAhOKdC4Bou11ANayfa+e8z4M41WbVgA0yLkgUvd/5lb7yIHb9WRXsyheeitfVzHP0vKxJC/HO4KaPdJ6rkeEU21t6uF17fhGKIuvIJmpSBnvK2xIPGfxGm/RGYJQB+sk59NVypZYBZdcsgVXG+CtHuEWNNAotTI+xNvpTZmuIvKl9ttSltWJG0+3DFzPsOiPCsIXj3dQNGSg9anDPQke2Pm+CCiV9cl62FQq5+Ggas5WkMhKQRE5VUje1szwW+6Bl3raxtA/1Uw8WUFcZiMd2C3U= tieto"
     ];
   };
 
+  # Allow unfree packages
+  nixpkgs.config.allowUnfree = true;
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-   environment.systemPackages = with pkgs; [
-     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-     wget
-     git
-     curl
-     firefox
-     v2raya
-     vscode
-   ];
+  environment.systemPackages = with pkgs; [
+    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    wget
+    curl
+    git
+    open-vm-tools
+    gparted
+    gnumake
+    gcc
+    gdb
+    # bison
+    # flex
+    # SDL2
+  ];
+
+  services.openssh = {
+    enable = true;
+  };
+
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -161,29 +125,12 @@
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
 
-  # Copy the NixOS configuration file and link it from the resulting system
-  # (/run/current-system/configuration.nix). This is useful in case you
-  # accidentally delete configuration.nix.
-  # system.copySystemConfiguration = true;
-
-  # This option defines the first version of NixOS you have installed on this particular machine,
-  # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
-  #
-  # Most users should NEVER change this value after the initial install, for any reason,
-  # even if you've upgraded your system to a new NixOS release.
-  #
-  # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
-  # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/stable/#sec-upgrading for how
-  # to actually do that.
-  #
-  # This value being lower than the current NixOS release does NOT mean your system is
-  # out of date, out of support, or vulnerable.
-  #
-  # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
-  # and migrated your data accordingly.
-  #
-  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "24.05"; # Did you read the comment?
+  # This value determines the NixOS release from which the default
+  # settings for stateful data, like file locations and database versions
+  # on your system were taken. It‘s perfectly fine and recommended to leave
+  # this value at the release version of the first install of this system.
+  # Before changing this value read the documentation for this option
+  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  system.stateVersion = "23.11"; # Did you read the comment?
 
 }
-
