@@ -1,0 +1,4 @@
+boot loader problem:
+	if boot loader different betwen old config and this new config(grub),it will be failed when switch
+	to new config, because there is no grub babababa, /dev/sda no such file or director ...
+
