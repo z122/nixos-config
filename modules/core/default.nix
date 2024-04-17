@@ -9,7 +9,7 @@ let
 in
 {
   nixos = nixpkgs.lib.nixosSystem {
-    specialArgs = { inherit self inputs username; };
+    specialArgs = { inherit self inputs username pkgs; };
     modules =
       [ (import ./../../hosts/nixos/hardware-configuration.nix) ]
       ++ [ (import ./bootloader.nix) ]
