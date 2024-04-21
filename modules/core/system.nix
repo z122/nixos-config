@@ -65,6 +65,8 @@ in
     nix-output-monitor
     vscode 
     verilator5008
+    gtkwave
+    python3
   ];
 
   time.timeZone = "Asia/Shanghai";
