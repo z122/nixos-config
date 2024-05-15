@@ -21,7 +21,7 @@ in
       ++ [inputs.vscode-server.nixosModules.default
         ({ config, pkgs, ... }: {
           services.vscode-server.enable = true;
-        }) ]
+        })] 
     ;
   };
 }

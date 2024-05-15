@@ -61,12 +61,14 @@ in
     gnumake
     gcc
     gdb
+    ccache
     gdbgui
     nix-output-monitor
     vscode 
     verilator5008
     gtkwave
     python3
+    gnomeExtensions.paperwm
   ];
 
   time.timeZone = "Asia/Shanghai";
