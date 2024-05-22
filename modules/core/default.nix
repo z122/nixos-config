@@ -18,10 +18,10 @@ in
       ++ [ (import ./sshservices.nix) ]
       ++ [ (import ./system.nix) ]
       ++ [ (import ./user.nix) ]
-      ++ [inputs.vscode-server.nixosModules.default
-        ({ config, pkgs, ... }: {
-          services.vscode-server.enable = true;
-        })] 
+      ++ [
+        inputs.nix-ld.nixosModules.nix-ld
+        { programs.nix-ld.dev.enable = true; }
+      ] 
     ;
   };
 }

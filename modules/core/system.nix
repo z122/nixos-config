@@ -69,6 +69,7 @@ in
     gtkwave
     python3
     gnomeExtensions.paperwm
+    nix-index
   ];
 
   time.timeZone = "Asia/Shanghai";

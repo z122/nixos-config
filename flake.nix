@@ -8,7 +8,8 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    vscode-server.url = "github:nix-community/nixos-vscode-server";
+    # vscode-server.url = "github:nix-community/nixos-vscode-server";
+    nix-ld.url = "github:Mic92/nix-ld";
 
   };
 
